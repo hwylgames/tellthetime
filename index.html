@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tell the Time · Dweud yr Amser</title>
+<meta name="description" content="Learn to read an analogue clock in English and Welsh. Dysgu darllen cloc yn Gymraeg ac yn Saesneg.">
+<meta name="theme-color" content="#fff4e4">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕒</text></svg>">
+<style>
+:root{--bg:#fff4e4;--ink:#2b2233;--muted:#7a6f80;--card:#fff;--accent:#6c5ce7;--accent-soft:#ece9ff;--green:#10b981;--red:#ef4444;--sun:#ffcf4d;--shadow:0 10px 30px rgba(60,40,20,.12)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-weight:500;font-family:ui-rounded,'SF Pro Rounded',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 12% 8%,#ffe0bd 0,transparent 42%),radial-gradient(circle at 92% 88%,#dcf1ff 0,transparent 45%),var(--bg);min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+.app{max-width:540px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+h1{font-size:clamp(1.45rem,6vw,1.95rem);margin:0;line-height:1.05;font-weight:700;letter-spacing:-.01em}
+.sub{font-size:.9rem;color:var(--muted);font-weight:500}
+.controls{display:flex;gap:8px;flex-shrink:0}
+.pill{border:0;background:#fff;font-weight:600;padding:9px 14px;border-radius:999px;box-shadow:0 3px 0 rgba(0,0,0,.08);cursor:pointer;touch-action:manipulation}
+.pill:active{transform:translateY(2px);box-shadow:none}
+.icon-btn{width:44px;padding:9px 0;text-align:center}
+@media (max-width:430px){header{gap:6px}.controls{gap:5px}.pill{padding:7px 10px;font-size:.88rem}.icon-btn{width:36px;padding:7px 0}h1{font-size:1.25rem;white-space:nowrap}.sub{font-size:.78rem;white-space:nowrap}}
+@media (max-width:380px){h1{font-size:1.1rem}.pill{padding:7px 8px}.icon-btn{width:34px}}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.stat{background:#fff;border-radius:16px;padding:8px 10px;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.stat .label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.stat .value{font-size:1.45rem;font-weight:600;display:inline-block}
+.stat.bump .value{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.4)}}
+.card{background:var(--card);border-radius:28px;padding:16px;box-shadow:var(--shadow)}
+.clock-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+#clock{width:min(270px,70vw);height:min(270px,70vw);display:block}
+.hand{transform-box:view-box;transform-origin:160px 160px;transition:transform .9s cubic-bezier(.34,1.25,.5,1)}
+.toggle-numbers{font-size:.85rem;padding:6px 14px;background:var(--accent-soft);box-shadow:none;color:var(--accent)}
+.prompt{text-align:center;font-size:1.3rem;font-weight:600;margin:12px 0 2px}
+.hint{text-align:center;color:var(--muted);font-size:.9rem;margin:0 0 12px;min-height:1.2em}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:3px solid #eee6da;background:#fffaf3;border-radius:18px;padding:12px 8px;min-height:80px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;transition:transform .12s,border-color .15s,background .15s;touch-action:manipulation}
+.opt .digital{font-size:1.9rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.opt:hover:not(:disabled){transform:translateY(-2px)}
+.opt.selected{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 4px rgba(108,92,231,.18)}
+.opt.selected::after{content:'✓';position:absolute;top:-10px;right:-10px;background:var(--accent);color:#fff;width:26px;height:26px;border-radius:50%;font-size:.85rem;display:grid;place-items:center}
+.opt.correct{border-color:var(--green);background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:var(--red);color:#fff;animation:shake .4s}
+.opt:disabled{cursor:default}
+.opt:disabled:not(.correct):not(.wrong){opacity:.5}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#btn-action{width:100%;margin-top:16px;font-size:1.15rem;font-weight:600;border:0;border-radius:20px;padding:16px;background:var(--accent);color:#fff;box-shadow:0 5px 0 #4b3dc4;cursor:pointer;touch-action:manipulation}
+#btn-action:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #4b3dc4}
+#btn-action:disabled{background:#d8d2e6;box-shadow:0 5px 0 #c3bbd6;cursor:not-allowed}
+#btn-action.next{background:var(--green);box-shadow:0 5px 0 #0b8a62}
+.feedback{text-align:center;font-weight:600;min-height:1.4em;margin-top:12px}
+.feedback.good{color:#0b8a62}.feedback.bad{color:#c62828}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:16px}
+/* single-animal celebration */
+#celebrate{position:fixed;left:8px;bottom:0;width:130px;pointer-events:none;z-index:40;transform:translateY(220%);transition:transform .45s cubic-bezier(.34,1.5,.5,1)}
+#celebrate.show{transform:translateY(0)}
+#celebrate .critter{--s:130px}
+#celebrate .critter svg{width:130px;height:130px;display:block}
+#celebrate.show .critter{animation:wiggle .6s ease-in-out .35s 3}
+@keyframes wiggle{25%{transform:rotate(-8deg) translateY(-6px)}75%{transform:rotate(8deg) translateY(-6px)}}
+.bubble{position:absolute;bottom:64px;left:124px;background:#fff;border-radius:18px;padding:8px 13px;box-shadow:var(--shadow);width:max-content;max-width:min(220px,calc(100vw - 150px));font-weight:600;font-size:1.05rem;line-height:1.2}
+.bubble small{display:block;color:var(--muted);font-weight:500;font-size:.75rem}
+.bubble::after{content:'';position:absolute;left:-9px;bottom:14px;border:9px solid transparent;border-right-color:#fff;border-left:0}
+/* cheer signs held by the animals */
+.critter{position:relative;isolation:isolate}
+.sign{position:absolute;left:50%;bottom:50%;z-index:-1;display:flex;flex-direction:column;align-items:center;transform-origin:50% 100%;animation:wave 1s ease-in-out infinite alternate}
+.sign .board{font-weight:600;font-size:calc(var(--s) * .13);line-height:1.1;letter-spacing:.01em;white-space:nowrap;padding:calc(var(--s) * .025) calc(var(--s) * .08);border:1.5px solid rgba(43,34,51,.35);border-radius:6px;box-shadow:0 2px 6px rgba(43,34,51,.12)}
+.sign .stick{width:2.5px;height:calc(var(--s) * .72);background:#b08560;border-radius:2px}
+@keyframes wave{from{transform:translateX(-50%) rotate(-8deg)}to{transform:translateX(-50%) rotate(8deg)}}
+/* streak parade */
+#parade{position:fixed;inset:0;pointer-events:none;z-index:50;display:none}
+#parade.on{display:block}
+.banner{position:absolute;top:14%;left:50%;background:var(--sun);font-weight:700;font-size:clamp(1.2rem,5.5vw,2.2rem);padding:12px 26px;border-radius:999px;box-shadow:0 6px 0 #e0a800,var(--shadow);white-space:nowrap;animation:bannerIn 7s ease forwards}
+@keyframes bannerIn{0%{transform:translate(-50%,-30px) scale(.5);opacity:0}8%{transform:translate(-50%,0) scale(1.08);opacity:1}12%{transform:translate(-50%,0) scale(1)}90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-20px)}}
+.track{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;display:flex;gap:18px;width:max-content;animation:march 7s linear forwards}
+@keyframes march{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+.track .critter{--s:86px}
+.track .sign .board{font-size:14px;padding:2px 8px}
+.track .sign .stick{height:68px}
+.track .critter svg{width:86px;height:86px;display:block}
+.marching svg{animation:bob .875s ease-in-out infinite}
+.marching .foot{transform-box:fill-box;transform-origin:center;animation:step .875s ease-in-out infinite}
+.marching .fr{animation-delay:-.4375s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+@keyframes step{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+/* confetti */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.cf{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;animation:fall var(--d) cubic-bezier(.3,.6,.6,1) forwards}
+@keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.hand{transition:none}.sign{animation:none;transform:translateX(-50%)}.marching svg,.marching .foot,#celebrate.show .critter{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1 data-i18n="title">Tell the Time</h1>
+      <div class="sub" data-i18n="subtitle">Dweud yr Amser</div>
+    </div>
+    <div class="controls">
+      <button id="btn-reset" class="pill" type="button">Reset</button>
+      <button id="btn-sound" class="pill icon-btn" type="button" aria-label="Sound on">🔊</button>
+      <button id="btn-lang" class="pill" type="button" lang="cy">Cymraeg</button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat" id="stat-score"><div class="label" data-i18n="score">Score</div><div class="value" id="score">0</div></div>
+    <div class="stat" id="stat-streak"><div class="label" data-i18n="streak">Streak</div><div class="value" id="streak">0</div></div>
+  </section>
+
+  <main class="card">
+    <div class="clock-wrap">
+      <svg id="clock" viewBox="0 0 320 320" role="img" aria-label="Analogue clock">
+        <circle cx="160" cy="160" r="153" fill="#ffcf4d" stroke="#2b2233" stroke-width="4"/>
+        <circle cx="160" cy="160" r="141" fill="#fffdf8"/>
+        <g id="ticks"></g>
+        <g id="clock-numbers"></g>
+        <g id="hour-hand" class="hand"><line x1="160" y1="174" x2="160" y2="96" stroke="#2b2233" stroke-width="11" stroke-linecap="round"/></g>
+        <g id="minute-hand" class="hand"><line x1="160" y1="178" x2="160" y2="54" stroke="#6c5ce7" stroke-width="7" stroke-linecap="round"/></g>
+        <circle cx="160" cy="160" r="10" fill="#2b2233"/>
+        <circle cx="160" cy="160" r="4" fill="#ffcf4d"/>
+      </svg>
+      <button id="toggle-numbers" class="pill toggle-numbers" type="button">Hide numbers</button>
+    </div>
+
+    <p class="prompt" data-i18n="prompt">What time is it?</p>
+    <p class="hint" id="hint"></p>
+    <div class="options" id="options"></div>
+    <button id="btn-action" type="button" disabled>Check Answer</button>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+  </main>
+
+  <footer data-i18n="footer"></footer>
+</div>
+
+<div id="celebrate" aria-hidden="true"></div>
+<div id="parade" aria-hidden="true"></div>
+<div id="confetti" aria-hidden="true"></div>
+
+<script>
+'use strict';
+
+/* ---------- Localisation ---------- */
+const I18N = {
+  en: {
+    title: 'Tell the Time', subtitle: 'Dweud yr Amser',
+    score: 'Score', streak: 'Streak', best: 'Best',
+    prompt: 'What time is it?', hint: 'Tap an answer, then press Check.',
+    check: 'Check Answer', next: 'Next Clock →',
+    hide: 'Hide numbers', show: 'Show numbers',
+    correct: 'Correct!', wrong: 'Not quite!', answer: "It's",
+    parade: 'Streak Parade! {n} in a row!', langBtn: 'Cymraeg',
+    soundOn: 'Sound on', soundOff: 'Sound off', reset: 'Reset', clock: 'Analogue clock',
+    footer: 'Practise reading an analogue clock in English and Welsh.'
+  },
+  cy: {
+    title: 'Dweud yr Amser', subtitle: 'Tell the Time',
+    score: 'Sgôr', streak: 'Rhediad', best: 'Gorau',
+    prompt: "Faint o'r gloch yw hi?", hint: "Dewisa ateb, yna pwysa ‘Gwirio’.",
+    check: "Gwirio'r Ateb", next: 'Cloc Nesaf →',
+    hide: "Cuddio'r rhifau", show: 'Dangos y rhifau',
+    correct: 'Cywir!', wrong: 'Dim cweit!', answer: 'Yr ateb yw',
+    parade: 'Parêd y Rhediad! {n} yn olynol!', langBtn: 'English',
+    soundOn: 'Sain ymlaen', soundOff: 'Sain i ffwrdd', reset: 'Ailosod', clock: 'Cloc analog',
+    footer: 'Ymarfer darllen cloc analog yn Gymraeg ac yn Saesneg.'
+  }
+};
+
+/* ---------- Cheer signs (same length in both languages) ---------- */
+const CHEERS = {
+  en: ['Well done!', 'Woo hoo!', 'Yay!', 'Hooray!', 'Super!', 'Brilliant!', 'Go you!', 'Amazing!', 'Top job!', 'Wow!'],
+  cy: ['Da iawn!', 'Hwrê!', 'Iei!', 'Gwych!', 'Campus!', 'Ardderchog!', 'Seren!', 'Anhygoel!', 'Bendigedig!', 'Waw!']
+};
+const SIGN_COLOURS = ['#ffffff', '#fff6d6', '#ffeef2', '#eaf8ff', '#effbe4', '#f3f1ff'];
+const signHTML = (i, c) => `<div class="sign" data-cheer="${i % CHEERS.en.length}"><div class="board" style="background:${SIGN_COLOURS[c % SIGN_COLOURS.length]}"></div><div class="stick"></div></div>`;
+
+/* ---------- Natural time phrases ---------- */
+const EN_NUM = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const EN_MIN = { 5: 'five', 10: 'ten', 15: 'quarter', 20: 'twenty', 25: 'twenty-five', 30: 'half' };
+// Welsh: plain hour after "wedi" and before "o'r gloch"; soft mutation after "i".
+const CY_HOUR = ['', 'un', 'dau', 'tri', 'pedwar', 'pump', 'chwech', 'saith', 'wyth', 'naw', 'deg', 'un ar ddeg', 'deuddeg'];
+const CY_HOUR_SOFT = ['', 'un', 'ddau', 'dri', 'bedwar', 'bump', 'chwech', 'saith', 'wyth', 'naw', 'ddeg', 'un ar ddeg', 'ddeuddeg'];
+const CY_MIN = { 5: 'pum munud', 10: 'deng munud', 15: 'chwarter', 20: 'ugain munud', 25: 'pum munud ar hugain', 30: 'hanner awr' };
+const nextHour = h => h % 12 + 1;
+
+function getNaturalSpokenTime(h, m, lang) {
+  if (lang === 'cy') {
+    if (m === 0) return `${CY_HOUR[h]} o'r gloch`;
+    if (m <= 30) return `${CY_MIN[m]} wedi ${CY_HOUR[h]}`;
+    return `${CY_MIN[60 - m]} i ${CY_HOUR_SOFT[nextHour(h)]}`;
+  }
+  if (m === 0) return `${EN_NUM[h]} o'clock`;
+  if (m <= 30) return `${EN_MIN[m]} past ${EN_NUM[h]}`;
+  return `${EN_MIN[60 - m]} to ${EN_NUM[nextHour(h)]}`;
+}
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const digital = (h, m) => `${h}:${String(m).padStart(2, '0')}`;
+
+/* ---------- Animal SVG helpers ---------- */
+const D = '#2b2233';
+const svgWrap = s => `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+const eye = (x, y, r = 4.5) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${D}"/><circle cx="${x + r * .35}" cy="${y - r * .4}" r="${r * .38}" fill="#fff"/>`;
+const eyes = (y = 52, dx = 12, r = 4.5) => eye(60 - dx, y, r) + eye(60 + dx, y, r);
+const cheeks = (y = 62, dx = 19, c = '#ff8fa3') => `<ellipse cx="${60 - dx}" cy="${y}" rx="5" ry="3" fill="${c}" opacity=".55"/><ellipse cx="${60 + dx}" cy="${y}" rx="5" ry="3" fill="${c}" opacity=".55"/>`;
+const smile = (y = 66, w = 5) => `<path d="M${60 - w} ${y} Q60 ${y + w} ${60 + w} ${y}" stroke="${D}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+const wMouth = y => `<path d="M53 ${y} Q56.5 ${y + 4} 60 ${y} Q63.5 ${y + 4} 67 ${y}" stroke="${D}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+const body = (c, b, rx = 25, ry = 21) => `<ellipse cx="60" cy="90" rx="${rx}" ry="${ry}" fill="${c}"/><ellipse cx="60" cy="95" rx="${rx * .6}" ry="${ry * .6}" fill="${b}"/>`;
+const feet = c => `<g class="foot fl"><ellipse cx="48" cy="110" rx="8" ry="5" fill="${c}"/></g><g class="foot fr"><ellipse cx="72" cy="110" rx="8" ry="5" fill="${c}"/></g>`;
+const head = (c, r = 28, cy = 52) => `<circle cx="60" cy="${cy}" r="${r}" fill="${c}"/>`;
+const mirror = s => `<g transform="translate(120 0) scale(-1 1)">${s}</g>`;
+function spikes(cx, cy, r1, r2, n, a0, a1, fill) {
+  let d = '';
+  for (let i = 0; i <= n * 2; i++) {
+    const a = (a0 + (a1 - a0) * i / (n * 2)) * Math.PI / 180, r = i % 2 ? r1 : r2;
+    d += (i ? 'L' : 'M') + (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1) + ' ';
+  }
+  return `<path d="${d}Z" fill="${fill}"/>`;
+}
+function fluff(cx, cy, R, n, r, fill, stroke) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const a = i / n * 2 * Math.PI;
+    s += `<circle cx="${(cx + R * Math.cos(a)).toFixed(1)}" cy="${(cy + R * Math.sin(a)).toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+  }
+  return s + `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${fill}"/>`;
+}
+
+/* ---------- The 15 animals ---------- */
+const ANIMALS = [
+  { id: 'bunny', nameEn: 'Pip the Bunny', nameCy: 'Pip y Gwningen', msgEn: 'Hop, hop, hooray!', msgCy: 'Hwrê! Hop, hop!', soundFreq: 880,
+    svg: svgWrap((() => { const c = '#efe6dc', ear = `<ellipse cx="46" cy="22" rx="8" ry="20" fill="${c}"/><ellipse cx="46" cy="23" rx="4" ry="14" fill="#ffb3c1"/>`;
+      return ear + mirror(ear) + body(c, '#fff') + feet(c) + head(c) + eyes(50) + `<path d="M56.5 59 h7 l-3.5 4z" fill="#ff8fa3"/>` + wMouth(63) + cheeks(60); })()) },
+  { id: 'shiba', nameEn: 'Mochi the Shiba Puppy', nameCy: "Mochi'r Ci Bach", msgEn: 'Woof! Well done!', msgCy: 'Wff! Da iawn!', soundFreq: 520,
+    svg: svgWrap((() => { const c = '#e8964a', b = '#fff3e3', ear = `<path d="M33 42 L36 12 L57 29Z" fill="${c}"/><path d="M38 35 L39.5 20 L51 29Z" fill="#ffd7b0"/>`;
+      return `<circle cx="86" cy="82" r="9" fill="none" stroke="${c}" stroke-width="7"/>` + ear + mirror(ear) + body(c, b) + feet(b) + head(c) +
+        `<ellipse cx="60" cy="65" rx="16" ry="11" fill="${b}"/><circle cx="47" cy="41" r="3" fill="${b}"/><circle cx="73" cy="41" r="3" fill="${b}"/>` +
+        eyes(51) + `<ellipse cx="60" cy="60" rx="4.5" ry="3.2" fill="${D}"/>` + wMouth(63) + cheeks(61, 21); })()) },
+  { id: 'fox', nameEn: 'Barnaby the Fox', nameCy: "Barnaby'r Llwynog", msgEn: 'Clever as a fox!', msgCy: 'Clyfar fel cadno!', soundFreq: 660,
+    svg: svgWrap((() => { const c = '#ea6d2f', b = '#fff8f0', ear = `<path d="M31 44 L33 8 L56 28Z" fill="${c}"/><path d="M35.5 31 L36.5 15 L48 25Z" fill="${D}"/>`;
+      return `<g transform="rotate(-38 96 80)"><ellipse cx="96" cy="80" rx="22" ry="10" fill="${c}"/><ellipse cx="114" cy="80" rx="7" ry="6" fill="${b}"/></g>` +
+        ear + mirror(ear) + body(c, b) + feet(D) + head(c) + `<path d="M32 58 Q47 54 60 68 Q73 54 88 58 Q82 80 60 80 Q38 80 32 58Z" fill="${b}"/>` +
+        eyes(51) + `<circle cx="60" cy="67" r="3.5" fill="${D}"/>` + smile(71, 4); })()) },
+  { id: 'owl', nameEn: 'Ollie the Baby Owl', nameCy: "Ollie'r Dylluan Fach", msgEn: 'Hoo-ray! So wise!', msgCy: 'Ti mor ddoeth!', soundFreq: 392,
+    svg: svgWrap((() => { const c = '#9b7653', b = '#f3e3c8', w = '#7d5e40', tuft = `<path d="M33 36 L35 12 L50 28Z" fill="${c}"/>`;
+      return tuft + mirror(tuft) + body(c, b) + `<ellipse cx="36" cy="88" rx="9" ry="17" fill="${w}"/><ellipse cx="84" cy="88" rx="9" ry="17" fill="${w}"/>` +
+        `<path d="M53 92 q3.5 4 7 0 q3.5 4 7 0 M53 100 q3.5 4 7 0 q3.5 4 7 0" stroke="#c9a77c" stroke-width="2" fill="none"/>` + feet('#f4a63a') + head(c) +
+        `<circle cx="47" cy="50" r="12.5" fill="${b}"/><circle cx="73" cy="50" r="12.5" fill="${b}"/>` + eyes(50, 13, 6.5) + `<path d="M55.5 59 h9 L60 68Z" fill="#f4a63a"/>`; })()) },
+  { id: 'bear', nameEn: 'Bramble the Bear Cub', nameCy: "Bramble'r Arth Fach", msgEn: 'Beary good!', msgCy: 'Gwych iawn!', soundFreq: 220,
+    svg: svgWrap((() => { const c = '#8a5a3b', b = '#e2bf96', ear = `<circle cx="36" cy="30" r="10" fill="${c}"/><circle cx="36" cy="30" r="5" fill="${b}"/>`;
+      return ear + mirror(ear) + body(c, b) + feet(c) + head(c) + `<ellipse cx="60" cy="64" rx="13" ry="10" fill="${b}"/>` + eyes(49) +
+        `<ellipse cx="60" cy="60" rx="5" ry="3.5" fill="${D}"/>` + wMouth(63) + cheeks(60, 21); })()) },
+  { id: 'duckling', nameEn: 'Puddles the Duckling', nameCy: 'Puddles yr Hwyaden Fach', msgEn: 'Quack-tastic!', msgCy: 'Cwac! Ardderchog!', soundFreq: 740,
+    svg: svgWrap((() => { const c = '#ffd84d', b = '#fff1a6', w = '#f5c400', o = '#f4892a';
+      return body(c, b) + `<ellipse cx="37" cy="88" rx="8" ry="14" fill="${w}" transform="rotate(25 37 88)"/><ellipse cx="83" cy="88" rx="8" ry="14" fill="${w}" transform="rotate(-25 83 88)"/>` +
+        feet(o) + head(c) + `<path d="M60 26 C55 15 62 10 67 15 C62 15 61 19 64 25Z" fill="${w}"/>` + eyes(50) +
+        `<ellipse cx="60" cy="63" rx="11" ry="5.5" fill="${o}"/><path d="M50 63 h20" stroke="#d96d14" stroke-width="1.5"/>` + cheeks(59, 21); })()) },
+  { id: 'guineapig', nameEn: 'Nugget the Guinea Pig', nameCy: 'Nugget y Mochyn Cwta', msgEn: 'Wheek wheek! Brilliant!', msgCy: 'Wic wic! Gwych!', soundFreq: 950,
+    svg: svgWrap((() => { const c = '#d98a4e', ear = `<ellipse cx="36" cy="34" rx="8" ry="6" fill="#b86a35" transform="rotate(-20 36 34)"/>`;
+      return `<ellipse cx="60" cy="88" rx="33" ry="22" fill="${c}"/><ellipse cx="76" cy="85" rx="14" ry="13" fill="#fff"/><ellipse cx="60" cy="98" rx="18" ry="10" fill="#fff4ea"/>` +
+        feet('#ffb3c1') + ear + mirror(ear) + head(c) + `<path d="M54 25 Q60 23 66 25 L64 50 Q60 54 56 50Z" fill="#fff"/><ellipse cx="60" cy="64" rx="14" ry="10" fill="#fff"/>` +
+        eyes(50, 14) + `<ellipse cx="60" cy="60" rx="3.5" ry="2.5" fill="#ff8fa3"/>` + wMouth(62) + cheeks(62, 22); })()) },
+  { id: 'dragon', nameEn: 'Idris the Little Dragon', nameCy: 'Idris y Ddraig Fach', msgEn: 'Roar-some!', msgCy: 'Bendigedig!', soundFreq: 262,
+    svg: svgWrap((() => { const c = '#4caf7a', b = '#c9f0a7', w = '#3a8f62', y = '#ffd84d',
+      wing = `<path d="M38 80 L8 56 L16 76 L6 84 L36 94Z" fill="${w}"/>`, horn = `<path d="M42 30 L37 10 L51 25Z" fill="${y}"/>`;
+      return wing + mirror(wing) + `<path d="M80 100 Q104 108 110 92 L116 96 L113 84 L105 89 Q100 98 82 93Z" fill="${c}"/>` + body(c, b) +
+        `<path d="M49 90 h22 M51 97 h18 M53 104 h14" stroke="#9ed47a" stroke-width="2" stroke-linecap="round"/>` + feet(c) + horn + mirror(horn) + head(c) +
+        `<path d="M53 26 L60 14 L67 26Z" fill="${y}"/><ellipse cx="60" cy="65" rx="16" ry="10" fill="#6cc493"/>` + eyes(48) +
+        `<circle cx="55" cy="62" r="1.8" fill="${D}"/><circle cx="65" cy="62" r="1.8" fill="${D}"/>` + smile(68, 5) + cheeks(57, 22); })()) },
+  { id: 'puffin', nameEn: 'Dilyn the Puffin', nameCy: 'Dilyn y Pâl', msgEn: 'Puff-ectly right!', msgCy: 'Perffaith!', soundFreq: 587,
+    svg: svgWrap((() => { const c = '#2b2b38', o = '#f4892a';
+      return body(c, '#fff') + `<ellipse cx="60" cy="93" rx="18" ry="16" fill="#fff"/><ellipse cx="36" cy="90" rx="8" ry="15" fill="#1d1d27"/><ellipse cx="84" cy="90" rx="8" ry="15" fill="#1d1d27"/>` +
+        feet(o) + head(c) + `<ellipse cx="60" cy="54" rx="21" ry="19" fill="#f3f1ee"/>` + eyes(49, 11, 4) +
+        `<path d="M49 61 Q60 54 71 61 L60 79Z" fill="${o}"/><path d="M51.5 65 Q60 60 68.5 65" stroke="#e8463a" stroke-width="3" fill="none"/><path d="M50 61 Q60 55 70 61" stroke="#9aa3ad" stroke-width="2.5" fill="none"/>` +
+        cheeks(57, 16, '#ff9a8a'); })()) },
+  { id: 'badger', nameEn: 'Bryn the Badger', nameCy: 'Bryn y Mochyn Daear', msgEn: 'Brilliant work!', msgCy: 'Gwaith arbennig!', soundFreq: 294,
+    svg: svgWrap((() => { const c = '#5f6066', k = '#2f3036', ear = `<circle cx="35" cy="38" r="7" fill="${k}"/><circle cx="35" cy="38" r="3.5" fill="#f4f4f4"/>`,
+      stripe = `<path d="M44 26 Q39 42 46 64 Q51 68 53 58 Q51 40 53 25Z" fill="${k}"/>`;
+      return ear + mirror(ear) + body(c, '#3c3d43') + feet(k) + head('#f4f4f4') + stripe + mirror(stripe) +
+        `<circle cx="48" cy="52" r="5.5" fill="#fff"/><circle cx="72" cy="52" r="5.5" fill="#fff"/>` + eyes(52, 12, 4) +
+        `<ellipse cx="60" cy="70" rx="5" ry="3.5" fill="${D}"/>` + smile(74, 4) + cheeks(64, 20); })()) },
+  { id: 'hedgehog', nameEn: 'Hazel the Hedgehog', nameCy: 'Hazel y Draenog', msgEn: 'Sharp thinking!', msgCy: 'Clyfar iawn!', soundFreq: 830,
+    svg: svgWrap((() => { const s = '#8a6a50', f = '#f2d9b8';
+      return spikes(60, 56, 44, 30, 10, 150, 390, '#6e523c') + spikes(60, 90, 32, 22, 8, 150, 390, '#6e523c') + body(s, f) + feet('#c9a27e') + head(s, 28, 56) +
+        `<ellipse cx="60" cy="62" rx="21" ry="18" fill="${f}"/>` + eyes(56, 9, 4) + `<circle cx="60" cy="65" r="3.5" fill="${D}"/>` + smile(69, 4) + cheeks(64, 15); })()) },
+  { id: 'lamb', nameEn: 'Clover the Lamb', nameCy: 'Clover yr Oen Bach', msgEn: 'Baa-rilliant!', msgCy: 'Me-e-e! Da iawn ti!', soundFreq: 440,
+    svg: svgWrap((() => { const w = '#fbfbfb', st = '#e2d9cc', leg = '#4a3b38', ear = `<ellipse cx="37" cy="56" rx="11" ry="5" fill="#f0bfa6" transform="rotate(-20 37 56)"/>`;
+      return `<g class="foot fl"><rect x="45" y="98" width="7" height="16" rx="3.5" fill="${leg}"/></g><g class="foot fr"><rect x="68" y="98" width="7" height="16" rx="3.5" fill="${leg}"/></g>` +
+        fluff(60, 84, 14, 9, 9, w, st) + fluff(60, 48, 20, 11, 9, w, st) + ear + mirror(ear) + `<ellipse cx="60" cy="58" rx="15" ry="17" fill="#f6d6c2"/>` +
+        eyes(55, 7, 3.6) + `<ellipse cx="60" cy="64" rx="3" ry="2" fill="#e88a8a"/><path d="M57 67 Q60 70 63 67" stroke="${D}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` + cheeks(62, 10); })()) },
+  { id: 'squirrel', nameEn: 'Pippin the Red Squirrel', nameCy: 'Pippin y Wiwer Goch', msgEn: "You're a star!", msgCy: 'Seren wyt ti!', soundFreq: 784,
+    svg: svgWrap((() => { const c = '#c65a28', b = '#f7dcc0', t = '#b14d1f', ear = `<path d="M35 42 L37 14 L52 30Z" fill="${c}"/><path d="M37 17 L33 5 L43 13Z" fill="${t}"/>`;
+      return `<path d="M76 106 C112 106 116 58 98 44 C86 34 74 46 84 56 C96 68 92 86 76 94Z" fill="${t}"/>` + ear + mirror(ear) + body(c, b) + feet(c) + head(c) +
+        `<ellipse cx="60" cy="64" rx="14" ry="10" fill="${b}"/>` + eyes(50) + `<ellipse cx="60" cy="60" rx="3.5" ry="2.5" fill="#7a3a1a"/>` + wMouth(62) + cheeks(60, 21) +
+        `<ellipse cx="60" cy="88" rx="5.5" ry="6.5" fill="#a0672e"/><path d="M53.5 84 a6.5 4.5 0 0 1 13 0Z" fill="#6b4220"/>`; })()) },
+  { id: 'otter', nameEn: 'Otto the Otter', nameCy: "Otto'r Dyfrgi", msgEn: 'Otterly amazing!', msgCy: 'Anhygoel!', soundFreq: 494,
+    svg: svgWrap((() => { const c = '#8a6146', b = '#ead2b0', k = '#6f4c36', ear = `<circle cx="37" cy="35" r="6" fill="${k}"/>`;
+      return `<path d="M78 102 Q104 106 112 90 Q100 96 82 94Z" fill="${k}"/>` + ear + mirror(ear) + body(c, b, 24, 22) + feet(k) + head(c) +
+        `<ellipse cx="60" cy="65" rx="17" ry="11" fill="${b}"/>` + eyes(50) + `<ellipse cx="60" cy="59.5" rx="5" ry="3.5" fill="${D}"/>` + wMouth(63) +
+        `<path d="M44 64 h-12 M44 68 l-11 3 M76 64 h12 M76 68 l11 3" stroke="${D}" stroke-width="1.2" opacity=".55" stroke-linecap="round"/>`; })()) },
+  { id: 'frog', nameEn: 'Celyn the Frog', nameCy: 'Celyn y Broga', msgEn: 'Ribbit! Spot on!', msgCy: 'Crawc! Cywir!', soundFreq: 330,
+    svg: svgWrap((() => { const c = '#6cc04a', b = '#d6f5b0', k = '#58a43a', eb = `<circle cx="42" cy="36" r="13" fill="${c}"/><circle cx="42" cy="36" r="8.5" fill="#fff"/>`;
+      return body(c, b) + feet(k) + `<ellipse cx="60" cy="60" rx="33" ry="24" fill="${c}"/>` + eb + mirror(eb) + eye(42, 37, 4.5) + eye(78, 37, 4.5) +
+        `<circle cx="51" cy="52" r="2.5" fill="${k}"/><circle cx="70" cy="50" r="3" fill="${k}"/>` +
+        `<path d="M40 64 Q60 80 80 64" stroke="${D}" stroke-width="2.5" fill="none" stroke-linecap="round"/>` + cheeks(67, 26); })()) }
+];
+
+/* ---------- State ---------- */
+const state = {
+  lang: 'en', hour: 0, minute: -1, options: [], correctIndex: 0,
+  selected: null, checked: false, feedback: null,
+  score: 0, streak: 0, best: 0, sound: true, showNumbers: true,
+  celebAnimal: null, lastAnimal: -1, parade: null
+};
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('ttt-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('ttt-' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+};
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const reduceMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- Clock ---------- */
+function initClockSVG() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const ticks = $('#ticks'), nums = $('#clock-numbers');
+  for (let i = 0; i < 60; i++) {
+    const a = i * 6 * Math.PI / 180, hourTick = i % 5 === 0, r1 = hourTick ? 121 : 129, r2 = 137;
+    const l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1', 160 + r1 * Math.sin(a)); l.setAttribute('y1', 160 - r1 * Math.cos(a));
+    l.setAttribute('x2', 160 + r2 * Math.sin(a)); l.setAttribute('y2', 160 - r2 * Math.cos(a));
+    l.setAttribute('stroke', hourTick ? D : '#bdb2c8');
+    l.setAttribute('stroke-width', hourTick ? '3.5' : '2');
+    l.setAttribute('stroke-linecap', 'round');
+    ticks.appendChild(l);
+  }
+  for (let n = 1; n <= 12; n++) {
+    const a = n * 30 * Math.PI / 180, t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', 160 + 104 * Math.sin(a)); t.setAttribute('y', 160 - 104 * Math.cos(a));
+    t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-size', '25'); t.setAttribute('font-weight', '600'); t.setAttribute('fill', D);
+    t.setAttribute('font-family', "ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif");
+    t.textContent = n;
+    nums.appendChild(t);
+  }
+}
+const handAngles = { h: 0, m: 0 };
+const forward = (prev, target) => { const cur = ((prev % 360) + 360) % 360; let d = target - cur; if (d < 0) d += 360; return prev + d; };
+function setClockTime(h, m) {
+  handAngles.m = forward(handAngles.m, m * 6);
+  handAngles.h = forward(handAngles.h, ((h % 12) + m / 60) * 30);
+  $('#minute-hand').style.transform = `rotate(${handAngles.m}deg)`;
+  $('#hour-hand').style.transform = `rotate(${handAngles.h}deg)`;
+}
+
+/* ---------- Rounds ---------- */
+const wrapH = h => ((h - 1) % 12 + 12) % 12 + 1;
+const wrapM = m => ((m % 60) + 60) % 60;
+function generateOptions(h, m) {
+  const key = (a, b) => a * 60 + b, seen = new Set([key(h, m)]), picks = [];
+  const add = (a, b) => { a = wrapH(a); b = wrapM(b); const k = key(a, b); if (!seen.has(k) && picks.length < 3) { seen.add(k); picks.push({ h: a, m: b }); } };
+  const smart = [
+    [m / 5 || 12, (h % 12) * 5], // hands swapped
+    [h, 60 - m],                 // past/to mix-up
+    [h - 1, 60 - m],             // "to" read with the wrong hour
+    [h + 1, m], [h - 1, m],      // hour off by one
+    [h, m + 5], [h, m - 5], [h, m + 10], [h, m - 10]
+  ];
+  shuffle(smart).forEach(([a, b]) => add(a, b));
+  while (picks.length < 3) add(1 + Math.floor(Math.random() * 12), Math.floor(Math.random() * 12) * 5);
+  const options = shuffle([{ h, m }, ...picks]);
+  return { options, correctIndex: options.findIndex(o => o.h === h && o.m === m) };
+}
+function setupNewRound() {
+  let h, m;
+  do { h = 1 + Math.floor(Math.random() * 12); m = Math.floor(Math.random() * 12) * 5; } while (h === state.hour && m === state.minute);
+  const g = generateOptions(h, m);
+  Object.assign(state, { hour: h, minute: m, options: g.options, correctIndex: g.correctIndex, selected: null, checked: false, feedback: null });
+  setClockTime(h, m);
+  renderOptions();
+  updateUI();
+}
+function renderOptions() {
+  const box = $('#options');
+  box.innerHTML = '';
+  state.options.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt';
+    b.innerHTML = '<span class="digital"></span>';
+    b.addEventListener('click', () => selectOption(i));
+    box.appendChild(b);
+  });
+}
+function paintOptions() {
+  Array.from($('#options').children).forEach((b, i) => {
+    const o = state.options[i];
+    b.querySelector('.digital').textContent = digital(o.h, o.m);
+    b.classList.toggle('selected', !state.checked && state.selected === i);
+    b.classList.toggle('correct', state.checked && i === state.correctIndex);
+    b.classList.toggle('wrong', state.checked && i === state.selected && i !== state.correctIndex);
+    b.disabled = state.checked;
+    b.setAttribute('aria-pressed', String(state.selected === i));
+  });
+}
+function selectOption(i) {
+  if (state.checked || i < 0 || i >= state.options.length) return;
+  state.selected = i;
+  playTick();
+  updateUI();
+}
+function checkAnswer() {
+  if (state.checked || state.selected === null) return;
+  state.checked = true;
+  const right = state.selected === state.correctIndex;
+  if (right) {
+    state.score += 10; state.streak += 1;
+    bump('#stat-score'); bump('#stat-streak');
+    playCorrect();
+    if (state.streak % 5 === 0) triggerParade(state.streak); else triggerSingleAnimalCelebration();
+  } else {
+    state.streak = 0;
+    playWrong();
+  }
+  state.feedback = right ? 'good' : 'bad';
+  updateUI();
+  $('#btn-action').focus({ preventScroll: true });
+}
+function onAction() { if (state.checked) setupNewRound(); else checkAnswer(); }
+function bump(sel) { const el = $(sel); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+/* ---------- UI ---------- */
+function updateUI() {
+  const t = I18N[state.lang];
+  document.documentElement.lang = state.lang;
+  document.title = state.lang === 'cy' ? 'Dweud yr Amser · Tell the Time' : 'Tell the Time · Dweud yr Amser';
+  $$('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+  const lb = $('#btn-lang'); lb.textContent = t.langBtn; lb.setAttribute('lang', state.lang === 'en' ? 'cy' : 'en');
+  const sb = $('#btn-sound'); sb.textContent = state.sound ? '🔊' : '🔇'; sb.setAttribute('aria-label', state.sound ? t.soundOn : t.soundOff); sb.title = sb.getAttribute('aria-label');
+  $('#btn-reset').textContent = t.reset;
+  $('#toggle-numbers').textContent = state.showNumbers ? t.hide : t.show;
+  $('#clock-numbers').style.display = state.showNumbers ? '' : 'none';
+  $('#clock').setAttribute('aria-label', t.clock);
+  $('#score').textContent = state.score;
+  $('#streak').textContent = state.streak;
+  paintOptions();
+  const act = $('#btn-action');
+  act.textContent = state.checked ? t.next : t.check;
+  act.disabled = !state.checked && state.selected === null;
+  act.classList.toggle('next', state.checked);
+  $('#hint').textContent = (!state.checked && state.selected === null) ? t.hint : '';
+  const fb = $('#feedback');
+  fb.className = 'feedback' + (state.feedback ? ' ' + state.feedback : '');
+  fb.textContent = state.feedback
+    ? `${state.feedback === 'good' ? t.correct : t.wrong} ${t.answer} ${getNaturalSpokenTime(state.hour, state.minute, state.lang)}.`
+    : '';
+  if (state.celebAnimal !== null) {
+    const a = ANIMALS[state.celebAnimal], bub = $('#celebrate .bubble');
+    if (bub) bub.innerHTML = `<small></small><span></span>`, bub.querySelector('small').textContent = state.lang === 'cy' ? a.nameCy : a.nameEn, bub.querySelector('span').textContent = state.lang === 'cy' ? a.msgCy : a.msgEn;
+  }
+  $$('.sign').forEach(el => { el.querySelector('.board').textContent = CHEERS[state.lang][el.dataset.cheer]; });
+  const banner = $('#parade .banner');
+  if (banner && state.parade) banner.textContent = '🎉 ' + t.parade.replace('{n}', state.parade) + ' 🎉';
+}
+
+/* ---------- Celebrations ---------- */
+let celebTimer = null, paradeTimer = null;
+function triggerSingleAnimalCelebration() {
+  let idx;
+  do { idx = Math.floor(Math.random() * ANIMALS.length); } while (idx === state.lastAnimal);
+  state.lastAnimal = idx; state.celebAnimal = idx;
+  const el = $('#celebrate');
+  el.innerHTML = `<div class="bubble"></div><div class="critter">${signHTML(Math.floor(Math.random() * CHEERS.en.length), Math.floor(Math.random() * 6))}${ANIMALS[idx].svg}</div>`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  playChime(ANIMALS[idx].soundFreq);
+  confetti(40);
+  clearTimeout(celebTimer);
+  celebTimer = setTimeout(() => { el.classList.remove('show'); state.celebAnimal = null; }, 2700);
+}
+function triggerParade(n) {
+  const el = $('#parade');
+  clearTimeout(paradeTimer);
+  clearTimeout(celebTimer); $('#celebrate').classList.remove('show'); state.celebAnimal = null;
+  state.parade = n;
+  el.innerHTML = `<div class="banner"></div><div class="track marching">${(() => { const o = Math.floor(Math.random() * CHEERS.en.length); return ANIMALS.map((a, i) => `<div class="critter">${signHTML(o + i, i)}${a.svg}</div>`).join(''); })()}</div>`;
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  playParadeMarch();
+  confetti(70);
+  setTimeout(() => confetti(50), 2300);
+  setTimeout(() => confetti(50), 4600);
+  paradeTimer = setTimeout(() => { el.classList.remove('on'); el.innerHTML = ''; state.parade = null; }, 7100);
+}
+const CONF_COLORS = ['#ff6b6b', '#ffcf4d', '#10b981', '#6c5ce7', '#4dabf7', '#ff8fd0'];
+function confetti(n) {
+  if (reduceMotion()) return;
+  const box = $('#confetti');
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    p.className = 'cf';
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.background = CONF_COLORS[i % CONF_COLORS.length];
+    if (Math.random() < .35) { p.style.borderRadius = '50%'; p.style.height = '9px'; }
+    p.style.setProperty('--x', (Math.random() * 160 - 80) + 'px');
+    p.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    p.style.setProperty('--d', (1.6 + Math.random() * 1.4) + 's');
+    p.style.animationDelay = (Math.random() * .3) + 's';
+    p.addEventListener('animationend', () => p.remove());
+    box.appendChild(p);
+  }
+}
+
+/* ---------- Synthesised sound (Web Audio) ---------- */
+let actx = null, master = null;
+function audio() {
+  if (!state.sound) return null;
+  try {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      actx = new AC(); master = actx.createGain(); master.gain.value = .9;
+      const comp = actx.createDynamicsCompressor(); master.connect(comp); comp.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  } catch (e) { return null; }
+}
+function tone(f, start, dur, type = 'sine', vol = .15, f2) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f, start);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, start + dur);
+  g.gain.setValueAtTime(.0001, start);
+  g.gain.exponentialRampToValueAtTime(vol, start + .012);
+  g.gain.exponentialRampToValueAtTime(.0001, start + dur);
+  o.connect(g); g.connect(master);
+  o.start(start); o.stop(start + dur + .03);
+}
+function playTick() { const c = audio(); if (c) tone(1150, c.currentTime, .05, 'square', .035); }
+function playCorrect() { const c = audio(); if (!c) return; const t = c.currentTime; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, t + i * .09, .24, 'triangle', .18)); }
+function playWrong() { const c = audio(); if (c) tone(180, c.currentTime, .38, 'sawtooth', .07, 140); }
+function playChime(f) { const c = audio(); if (!c) return; const t = c.currentTime + .4; tone(f, t, .13, 'sine', .16, f * 1.15); tone(f * 1.5, t + .13, .2, 'sine', .14, f * 1.6); }
+// Parade march: 4 bars of 4/4 at ~137 bpm = exactly 7 seconds.
+const NOTE = n => { const m = n.match(/^([A-G])(#|b)?(\d)$/); const st = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0); return 440 * Math.pow(2, (st + (Number(m[3]) + 1) * 12 - 69) / 12); };
+let noiseBuf = null;
+function noise(start, dur, vol, type, freq) {
+  if (!noiseBuf) { noiseBuf = actx.createBuffer(1, actx.sampleRate, actx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+  src.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
+  g.gain.setValueAtTime(vol, start); g.gain.exponentialRampToValueAtTime(.0001, start + dur);
+  src.connect(f); f.connect(g); g.connect(master); src.start(start); src.stop(start + dur + .02);
+}
+function kick(t) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + .15);
+  g.gain.setValueAtTime(.32, t); g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + .22);
+}
+const hat = (t, vol = .05) => noise(t, .045, vol, 'highpass', 8000);
+const clap = t => { noise(t, .14, .16, 'bandpass', 1400); noise(t + .012, .12, .12, 'bandpass', 1100); };
+function pluck(f, t, dur, vol = .09) {
+  const o = actx.createOscillator(), lp = actx.createBiquadFilter(), g = actx.createGain();
+  o.type = 'square'; o.frequency.value = f; lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(f * 8, t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + Math.max(dur, .15));
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur + .12);
+  o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .15);
+}
+function supersaw(freqs, t, dur, vol = .03, cutoff = 2600) {
+  const lp = actx.createBiquadFilter(), g = actx.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = cutoff;
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  lp.connect(g); g.connect(master);
+  freqs.forEach(f => [-12, 12].forEach(dt => { const o = actx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + dur + .03); }));
+}
+function bassNote(f, t, dur) {
+  const o = actx.createOscillator(), lp = actx.createBiquadFilter(), g = actx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = f; lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(220, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.2, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .03);
+}
+// Pop parade tune: 4 bars of C – G – Am – F at ~137 bpm, then a big finish. Exactly 7 seconds.
+function playParadeMarch() {
+  const c = audio(); if (!c) return;
+  const B = .4375, t0 = c.currentTime + .06, at = b => t0 + b * B;
+  const hook = [
+    ['G5', 0, .5], ['E5', .75, .25], ['G5', 1, .5], ['A5', 1.5, .5], ['G5', 2.5, .5], ['E5', 3, .5], ['D5', 3.5, .5],
+    ['D5', 4, .5], ['B4', 4.75, .25], ['D5', 5, .5], ['G5', 5.5, .5], ['D5', 6.5, .5], ['B4', 7, .5], ['G4', 7.5, .5],
+    ['E5', 8, .5], ['C5', 8.75, .25], ['E5', 9, .5], ['A5', 9.5, .5], ['G5', 10.5, .5], ['E5', 11, .5], ['C5', 11.5, .5],
+    ['F5', 12, .5], ['A5', 12.5, .5], ['C6', 13, .5], ['A5', 13.5, .5]
+  ];
+  hook.forEach(([n, b, d]) => { const f = NOTE(n); pluck(f, at(b), d * B); tone(f * 2, at(b), .25, 'sine', .025); });
+  const prog = [['C2', ['C4', 'E4', 'G4']], ['G1', ['B3', 'D4', 'G4']], ['A1', ['C4', 'E4', 'A4']], ['F1', ['C4', 'F4', 'A4']]];
+  prog.forEach(([root, chord], bar) => {
+    const rf = NOTE(root);
+    for (let e = 0; e < 8; e++) {          // eighth notes
+      const b = bar * 4 + e / 2;
+      if (b >= 14) break;
+      bassNote(e % 2 ? rf * 2 : rf, at(b), B * .45);   // octave bounce
+      if (e % 2) { supersaw(chord.map(NOTE), at(b), B * .4); hat(at(b), .07); } // off-beat stabs
+      else { kick(at(b)); hat(at(b + .25), .03); }
+      if (e === 2 || e === 6) clap(at(b));
+    }
+  });
+  // build-up into the finish
+  for (let i = 0; i < 8; i++) clap(at(13 + i * .125));
+  const sweep = actx.createOscillator(), sg = actx.createGain();
+  sweep.type = 'sine'; sweep.frequency.setValueAtTime(400, at(12)); sweep.frequency.exponentialRampToValueAtTime(2400, at(14));
+  sg.gain.setValueAtTime(.0001, at(12)); sg.gain.exponentialRampToValueAtTime(.04, at(13.9)); sg.gain.exponentialRampToValueAtTime(.0001, at(14.05));
+  sweep.connect(sg); sg.connect(master); sweep.start(at(12)); sweep.stop(at(14.1));
+  // big finish
+  const end = at(14);
+  kick(end); noise(end, 1.4, .1, 'highpass', 6000);
+  bassNote(NOTE('C2'), end, .9);
+  supersaw(['C4', 'E4', 'G4', 'C5'].map(NOTE), end, .9, .035, 3200);
+  pluck(NOTE('C6'), end, .5, .1); tone(NOTE('C7'), end, .6, 'sine', .03);
+}
+
+/* ---------- Boot ---------- */
+function init() {
+  state.lang = store.get('lang', 'en') === 'cy' ? 'cy' : 'en';
+  state.sound = store.get('sound', true) !== false;
+  state.showNumbers = store.get('numbers', true) !== false;
+  initClockSVG();
+  $('#btn-action').addEventListener('click', onAction);
+  $('#btn-lang').addEventListener('click', () => { state.lang = state.lang === 'en' ? 'cy' : 'en'; store.set('lang', state.lang); updateUI(); });
+  $('#btn-reset').addEventListener('click', () => { state.score = 0; state.streak = 0; bump('#stat-score'); bump('#stat-streak'); playTick(); updateUI(); });
+  $('#btn-sound').addEventListener('click', () => { state.sound = !state.sound; store.set('sound', state.sound); updateUI(); if (state.sound) playTick(); });
+  $('#toggle-numbers').addEventListener('click', () => { state.showNumbers = !state.showNumbers; store.set('numbers', state.showNumbers); updateUI(); });
+  document.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (['1', '2', '3', '4'].includes(e.key)) { selectOption(Number(e.key) - 1); return; }
+    const onButton = document.activeElement && document.activeElement.tagName === 'BUTTON';
+    if (e.key === 'Enter' && !onButton) { e.preventDefault(); if (!$('#btn-action').disabled) onAction(); }
+  });
+  setupNewRound();
+}
+if (typeof document !== 'undefined') init();
+</script>
+</body>
+</html>

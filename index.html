@@ -73,14 +73,14 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:16px}
 /* streak parade */
 #parade{position:fixed;inset:0;pointer-events:none;z-index:50;display:none}
 #parade.on{display:block}
-.banner{position:absolute;top:14%;left:50%;background:var(--sun);font-weight:700;font-size:clamp(1.2rem,5.5vw,2.2rem);padding:12px 26px;border-radius:999px;box-shadow:0 6px 0 #e0a800,var(--shadow);white-space:nowrap;animation:bannerIn 7s ease forwards}
+.banner{position:absolute;top:14%;left:50%;background:var(--sun);font-weight:700;font-size:clamp(1.2rem,5.5vw,2.2rem);padding:12px 26px;border-radius:999px;box-shadow:0 6px 0 #e0a800,var(--shadow);white-space:nowrap;animation:bannerIn var(--dur,7s) ease forwards}
 @keyframes bannerIn{0%{transform:translate(-50%,-30px) scale(.5);opacity:0}8%{transform:translate(-50%,0) scale(1.08);opacity:1}12%{transform:translate(-50%,0) scale(1)}90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-20px)}}
-.track{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;display:flex;gap:18px;width:max-content;animation:march 7s linear forwards}
+.track{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;display:flex;gap:clamp(18px,2vw,30px);width:max-content;animation:march var(--dur,7s) linear forwards}
 @keyframes march{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
-.track .critter{--s:86px}
-.track .sign .board{font-size:14px;padding:2px 8px}
-.track .sign .stick{height:68px}
-.track .critter svg{width:86px;height:86px;display:block}
+.track .critter{--s:clamp(86px,9vw,140px)}
+.track .sign .board{font-size:calc(var(--s) * .2);padding:calc(var(--s) * .03) calc(var(--s) * .1);border-radius:8px}
+.track .sign .stick{height:calc(var(--s) * .8)}
+.track .critter svg{width:var(--s);height:var(--s);display:block}
 .marching svg{animation:bob .875s ease-in-out infinite}
 .marching .foot{transform-box:fill-box;transform-origin:center;animation:step .875s ease-in-out infinite}
 .marching .fr{animation-delay:-.4375s}
@@ -480,18 +480,26 @@ function triggerSingleAnimalCelebration() {
   clearTimeout(celebTimer);
   celebTimer = setTimeout(() => { el.classList.remove('show'); state.celebAnimal = null; }, 2700);
 }
+// Parade length: 7 s on a phone, rising to 12 s on a wide laptop screen.
+function paradeSeconds() {
+  const w = typeof innerWidth === 'number' ? innerWidth : 390;
+  const t = Math.min(1, Math.max(0, (w - 430) / (1200 - 430)));
+  return Math.round((7 + 5 * t) * 10) / 10;
+}
 function triggerParade(n) {
   const el = $('#parade');
   clearTimeout(paradeTimer);
   clearTimeout(celebTimer); $('#celebrate').classList.remove('show'); state.celebAnimal = null;
   state.parade = n;
+  const secs = paradeSeconds();
+  el.style.setProperty('--dur', secs + 's');
   el.innerHTML = `<div class="banner"></div><div class="track marching">${(() => { const o = Math.floor(Math.random() * CHEERS.en.length); return ANIMALS.map((a, i) => `<div class="critter">${signHTML(o + i, i)}${a.svg}</div>`).join(''); })()}</div>`;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
-  playParadeMarch();
+  playParadeMarch(secs);
   confetti(70);
-  setTimeout(() => confetti(50), 2300);
-  setTimeout(() => confetti(50), 4600);
-  paradeTimer = setTimeout(() => { el.classList.remove('on'); el.innerHTML = ''; state.parade = null; }, 7100);
+  setTimeout(() => confetti(50), secs * 1000 * .33);
+  setTimeout(() => confetti(50), secs * 1000 * .66);
+  paradeTimer = setTimeout(() => { el.classList.remove('on'); el.innerHTML = ''; state.parade = null; }, secs * 1000 + 100);
 }
 const CONF_COLORS = ['#ff6b6b', '#ffcf4d', '#10b981', '#6c5ce7', '#4dabf7', '#ff8fd0'];
 function confetti(n) {
@@ -581,10 +589,10 @@ function bassNote(f, t, dur) {
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.2, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .03);
 }
-// Pop parade tune: 4 bars of C – G – Am – F at ~137 bpm, then a big finish. Exactly 7 seconds.
-function playParadeMarch() {
+// Pop parade tune: 16 beats (4 bars of C – G – Am – F, then a big finish). Tempo scales so it lasts `secs` (7 s by default).
+function playParadeMarch(secs = 7) {
   const c = audio(); if (!c) return;
-  const B = .4375, t0 = c.currentTime + .06, at = b => t0 + b * B;
+  const B = secs / 16, t0 = c.currentTime + .06, at = b => t0 + b * B;
   const hook = [
     ['G5', 0, .5], ['E5', .75, .25], ['G5', 1, .5], ['A5', 1.5, .5], ['G5', 2.5, .5], ['E5', 3, .5], ['D5', 3.5, .5],
     ['D5', 4, .5], ['B4', 4.75, .25], ['D5', 5, .5], ['G5', 5.5, .5], ['D5', 6.5, .5], ['B4', 7, .5], ['G4', 7.5, .5],
